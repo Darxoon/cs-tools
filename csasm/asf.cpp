@@ -16,7 +16,7 @@ AsfModuleTracker::~AsfModuleTracker()
 	}
 }
 
-AsfModule *AsfModuleTracker::getModule(const std::string &name, bool verbose = false)
+AsfModule *AsfModuleTracker::getModule(const std::string &name, bool verbose)
 {
 	// Check if it has been loaded already
 	auto it = mModules.find(name);
@@ -37,7 +37,7 @@ AsfModule *AsfModuleTracker::getModule(const std::string &name, bool verbose = f
 	}
 }
 
-AsfModule::AsfModule(const std::string &name, const std::vector<uint8_t> &buffer, AsfModuleTracker *tracker, bool verbose = false)
+AsfModule::AsfModule(const std::string &name, const std::vector<uint8_t> &buffer, AsfModuleTracker *tracker, bool verbose)
 	: mName(name), mData(buffer), mTracker(tracker)
 {
 	mName = name;
