@@ -1102,6 +1102,8 @@ int main(int argc, char **argv)
 
 	std::cout << fmtString("csasm by PistonMiner, built on %s\n\n", __TIMESTAMP__);
 
+	bool verbose = argc >= 5 && (strcmp(argv[4], "-v") != 0 || strcmp(argv[4], "--verbose") != 0);
+	
 	// Create engine
 	asIScriptEngine *engine = asCreateScriptEngine();
 	if (!engine)
@@ -1117,7 +1119,7 @@ int main(int argc, char **argv)
 	ConfigureEngine(engine, config);
 
 	AsfModuleTracker tracker(engine, argv[1]);
-	AsfModule *mainModule = tracker.getModule(argv[3]);
+	AsfModule *mainModule = tracker.getModule(argv[3], verbose);
 	std::cout << DumpModule(mainModule->getScriptModule());
 
 	resetConsoleCodePage();
