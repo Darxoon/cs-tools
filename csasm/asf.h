@@ -57,7 +57,7 @@ private:
 
 	friend class AsfModuleTracker;
 	const uint8_t cAsfMagic[4] = {
-		'A', 'S', 'F', 0x07
+		'A', 'S', 'F', 0x01
 	};
 };
 

@@ -240,6 +240,7 @@ sTokenWord const tokenWords[] =
 	asTokenDef("!="        , ttNotEqual),
 	asTokenDef("!is"       , ttNotIs),
 	asTokenDef("@"         , ttHandle),
+	asTokenDef("ref"       , ttHandle),
 	asTokenDef("and"       , ttAnd),
 	asTokenDef("auto"      , ttAuto),
 	asTokenDef("bool"      , ttBool),

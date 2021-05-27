@@ -1794,26 +1794,26 @@ void asCReader::ReadDataType(asCDataType *dt)
 		objType = ReadObjectType();
 
 	// LinusS: original code:
-	// struct
-	// {
-	// 	char isObjectHandle :1;
-	// 	char isHandleToConst:1;
-	// 	char isReference    :1;
-	// 	char isReadOnly     :1;
-	// } bits = {0};
-	struct // LinusS: This is broken! 0x10 is read,
-	{
-		char pad            :4;
-		char isReadOnly     :1;
-		char isReference    :1;
-		char isHandleToConst:1;
-		char isObjectHandle :1;
-	} bits = {0};
+	 struct
+	 {
+	 	char isObjectHandle :1;
+	 	char isHandleToConst:1;
+	 	char isReference    :1;
+	 	char isReadOnly     :1;
+	 } bits = {0};
+	//struct // LinusS: This is broken! 0x10 is read,
+	//{
+	//	char pad            :4;
+	//	char isReadOnly     :1;
+	//	char isReference    :1;
+	//	char isHandleToConst:1;
+	//	char isObjectHandle :1;
+	//} bits = {0};
 	asASSERT( sizeof(bits) == 1 );
 	ReadData(&bits, 1);
 
 	// LinusS: To check this is working
-	asASSERT(bits.pad == 0);
+	//asASSERT(bits.pad == 0);
 
 	asCScriptFunction *funcDef = 0;
 	if( tokenType == ttIdentifier && objType && objType->name == "$func" )
