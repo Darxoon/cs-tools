@@ -12,6 +12,8 @@
 #include <scriptany/scriptany.h>
 #include <weakref/weakref.h>
 
+#include <boost/algorithm/string/replace.hpp>
+
 #include "json.hpp"
 
 #include <fstream>
@@ -707,7 +709,10 @@ std::string dumpBytecode(asIScriptFunction *func)
 				case asBC_STR:
 					{
 						const auto &str = engine->GetConstantString(arg0);
-						disas = fmtString("%-8s %d (%d:\"%s\")", mnem, arg0, str.GetLength(), str.AddressOf());
+						std::string formatted = str.AddressOf();
+						boost::replace_all(formatted, "\\", "\\\\");
+						boost::replace_all(formatted, "\n", "\\n");
+						disas = fmtString("%-8s %d (%d:\"%s\")", mnem, arg0, str.GetLength(), formatted.c_str());
 					}
 					break;
 				default:

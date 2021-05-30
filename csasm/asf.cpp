@@ -61,7 +61,7 @@ AsfModule::AsfModule(const std::string &name, const std::vector<uint8_t> &buffer
 	for (uint32_t i = 0; i < dependencyCount; ++i)
 	{
 		mDependencies.emplace_back(reinterpret_cast<char *>(data));
-		data += 64;
+		data += 128;
 	}
 
 	// Load dependencies
