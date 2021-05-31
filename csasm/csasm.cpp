@@ -1,6 +1,7 @@
 #include "asf.h"
 
 #include "platform.h"
+#include "args.h"
 
 #include <angelscript.h>
 
@@ -1136,10 +1137,14 @@ int main(int argc, char **argv)
 {
 	// ConIO for UTF8 characters
 	setupConsoleCodePage();
+	
+	auto args = parseArgs(argc, argv);
+	if (!args.valid)
+		return 0;
 
 	std::cout << fmtString("csasm by PistonMiner, built on %s\n\n", __TIMESTAMP__);
 
-	bool verbose = argc >= 5 && (strcmp(argv[4], "-v") != 0 || strcmp(argv[4], "--verbose") != 0);
+	bool verbose = args.verbose;
 	
 	// Create engine
 	asIScriptEngine *engine = asCreateScriptEngine();
@@ -1151,12 +1156,12 @@ int main(int argc, char **argv)
 	engine->SetMessageCallback(asFUNCTION(AngelScriptMessageCallback), 0, asCALL_CDECL);
 
 	// We must replicate the scripting environment that PMCS registers in order to parse its scripts
-	std::ifstream configStream(argv[2]);
+	std::ifstream configStream(args.configFile.c_str());
 	nlohmann::json config = nlohmann::json::parse(configStream);
 	ConfigureEngine(engine, config);
 
-	AsfModuleTracker tracker(engine, argv[1]);
-	AsfModule *mainModule = tracker.getModule(argv[3], verbose);
+	AsfModuleTracker tracker(engine, args.rootFolder.string());
+	AsfModule *mainModule = tracker.getModule(args.modulePath, verbose);
 	std::cout << DumpModule(mainModule->getScriptModule());
 
 	resetConsoleCodePage();
