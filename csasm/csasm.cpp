@@ -1039,11 +1039,18 @@ std::string dumpBytecode(asIScriptFunction *func)
 	return dump;
 }
 
-std::string DumpModule(asIScriptModule *module)
+std::string DumpModule(asIScriptModule *module, const std::vector<std::string>& dependencies)
 {
 	// Dump all information in the module
 	std::string dump = "";
 
+	// Dependencies
+	dump.append(fmtString("dependencies: %zu\n", dependencies.size()));
+	for (const auto& dependency : dependencies)
+	{
+		dump.append(fmtString("\t%s\n", dependency.c_str()));
+	}
+	
 	// Enums
 	dump.append(fmtString("enums: %u\n", module->GetEnumCount()));
 	for (unsigned int i = 0; i < module->GetEnumCount(); ++i)
@@ -1161,8 +1168,9 @@ int main(int argc, char **argv)
 	ConfigureEngine(engine, config);
 
 	AsfModuleTracker tracker(engine, args.rootFolder.string());
-	AsfModule *mainModule = tracker.getModule(args.modulePath, verbose);
-	std::cout << DumpModule(mainModule->getScriptModule());
+	std::vector<std::string> dependencies;
+	AsfModule *mainModule = tracker.getModule(args.modulePath, &dependencies, verbose);
+	std::cout << DumpModule(mainModule->getScriptModule(), dependencies);
 
 	resetConsoleCodePage();
 }

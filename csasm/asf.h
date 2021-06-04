@@ -39,7 +39,7 @@ class AsfModuleTracker;
 class AsfModule
 {
 public:
-	AsfModule(const std::string &name, const std::vector<uint8_t> &buffer, AsfModuleTracker *tracker, bool verbose = false);
+	AsfModule(const std::string &name, const std::vector<uint8_t> &buffer, AsfModuleTracker *tracker, std::vector<std::string>* direct_dependencies = nullptr, bool verbose = false);
 	
 	asIScriptModule *getScriptModule() const
 	{
@@ -72,7 +72,7 @@ public:
 		return mEngine;
 	}
 
-	AsfModule *getModule(const std::string &name, bool verbose = false);
+	AsfModule *getModule(const std::string &name, std::vector<std::string>* direct_dependencies, bool verbose = false);
 
 private:
 	asIScriptEngine *mEngine;

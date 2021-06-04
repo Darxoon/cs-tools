@@ -16,7 +16,7 @@ AsfModuleTracker::~AsfModuleTracker()
 	}
 }
 
-AsfModule *AsfModuleTracker::getModule(const std::string &name, bool verbose)
+AsfModule *AsfModuleTracker::getModule(const std::string &name, std::vector<std::string>* direct_dependencies, bool verbose)
 {
 	// Check if it has been loaded already
 	auto it = mModules.find(name);
@@ -31,13 +31,13 @@ AsfModule *AsfModuleTracker::getModule(const std::string &name, bool verbose)
 		filePath.concat(name);
 		std::ifstream inputStream(filePath.string(), std::ios::binary);
 		std::vector<uint8_t> inputBuffer((std::istreambuf_iterator<char>(inputStream)), (std::istreambuf_iterator<char>()));
-		auto *newModule = new AsfModule(name, inputBuffer, this, verbose);
+		auto *newModule = new AsfModule(name, inputBuffer, this, direct_dependencies, verbose);
 		mModules[name] = newModule;
 		return newModule;
 	}
 }
 
-AsfModule::AsfModule(const std::string &name, const std::vector<uint8_t> &buffer, AsfModuleTracker *tracker, bool verbose)
+AsfModule::AsfModule(const std::string &name, const std::vector<uint8_t> &buffer, AsfModuleTracker *tracker, std::vector<std::string>* direct_dependencies, bool verbose)
 	: mName(name), mData(buffer), mTracker(tracker)
 {
 	mName = name;
@@ -73,9 +73,17 @@ AsfModule::AsfModule(const std::string &name, const std::vector<uint8_t> &buffer
 		}
 		std::cout << std::endl;
 	}
+	if (direct_dependencies != nullptr)
+	{
+		direct_dependencies->reserve(direct_dependencies->size() + mDependencies.size());
+	}
 	for (const auto &dep : mDependencies)
 	{
-		if (!mTracker->getModule(dep, verbose))
+		if (direct_dependencies != nullptr)
+		{
+			direct_dependencies->emplace_back(std::string(dep));
+		}
+		if (!mTracker->getModule(dep, nullptr, verbose))
 		{
 			// Dependency failed to load
 			return;
