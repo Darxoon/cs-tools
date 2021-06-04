@@ -1121,7 +1121,7 @@ std::string DumpModule(asIScriptModule *module, const std::vector<std::string>& 
 	for (unsigned int i = 0; i < module->GetImportedFunctionCount(); ++i)
 	{
 		// #todo-csasm: Dump imported functions
-		dump.append(fmtString("\t%s %s\n",
+		dump.append(fmtString("\t%s (from %s)\n",
 							  module->GetImportedFunctionDeclaration(i),
 							  module->GetImportedFunctionSourceModule(i)));
 	}
