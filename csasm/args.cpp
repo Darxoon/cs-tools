@@ -15,6 +15,7 @@ CommandlineArgs parseArgs(const int argc, char** argv)
 		("data-root", program_options::value<std::string>(), "the root folder of the rom")
 		("registry", program_options::value<std::string>(), "the config registry.json file")
 		("module", program_options::value<std::string>(), "the relative path to the AngelScript .bin file")
+		("output,o", program_options::value<std::string>(), "the output file. If left empty, the output will be logged into the console")
 		;
 
 	// Positional arguments
@@ -39,6 +40,7 @@ CommandlineArgs parseArgs(const int argc, char** argv)
 		map["data-root"].as<std::string>(),
 		map["registry"].as<std::string>(),
 		map["module"].as<std::string>(),
+		map.count("output") ? map["output"].as<std::string>() : "",
 		map.count("verbose") > 0,
 	};
 }

@@ -1170,7 +1170,21 @@ int main(int argc, char **argv)
 	AsfModuleTracker tracker(engine, args.rootFolder.string());
 	std::vector<std::string> dependencies;
 	AsfModule *mainModule = tracker.getModule(args.modulePath, &dependencies, verbose);
-	std::cout << DumpModule(mainModule->getScriptModule(), dependencies);
+	std::string disassembly = DumpModule(mainModule->getScriptModule(), dependencies);
+
+	if (args.outputFile.empty())
+		std::cout << disassembly;
+	else
+	{
+		namespace fs = boost::filesystem;
+		
+		fs::path file(args.outputFile);
+		fs::create_directories(fs::absolute(file).parent_path());
+		
+		fs::ofstream stream(file);
+		stream << disassembly;
+		stream.close();
+	}
 
 	resetConsoleCodePage();
 }
