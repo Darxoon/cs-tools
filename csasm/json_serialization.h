@@ -7,5 +7,5 @@
 
 #include "angelscript.h"
 
-//std::string dumpBytecode(asIScriptFunction* func);
+std::string serializeBytecode(asIScriptFunction* func);
 nlohmann::json serializeModule(asIScriptModule* module, const std::vector<std::string>& dependencies);
