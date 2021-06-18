@@ -15,7 +15,8 @@ CommandlineArgs parseArgs(const int argc, char** argv)
 		("data-root", program_options::value<std::string>(), "the root folder of the rom")
 		("registry", program_options::value<std::string>(), "the config registry.json file")
 		("module", program_options::value<std::string>(), "the relative path to the AngelScript .bin file")
-		("output,o", program_options::value<std::string>(), "the output file. If left empty, the output will be logged into the console")
+		("output,o", program_options::value<std::string>(), "the json output file. Cannot be reassembled yet")
+		("dump,d", program_options::value<std::string>(), "the dump output file. This is the default console output. More readable than json output but can't be reassembled")
 		;
 
 	// Positional arguments
@@ -41,6 +42,7 @@ CommandlineArgs parseArgs(const int argc, char** argv)
 		map["registry"].as<std::string>(),
 		map["module"].as<std::string>(),
 		map.count("output") ? map["output"].as<std::string>() : "",
+		map.count("dump") ? map["dump"].as<std::string>() : "",
 		map.count("verbose") > 0,
 	};
 }

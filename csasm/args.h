@@ -12,6 +12,7 @@ struct CommandlineArgs
 	std::string modulePath;
 
 	std::string outputFile;
+	std::string dumpFile;
 	
 	bool verbose;
 };

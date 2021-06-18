@@ -20,6 +20,8 @@
 #include <iostream>
 #include <string>
 
+#include "json_serialization.h"
+
 template<typename... A>
 static std::string fmtString(const std::string &format, A... args)
 {
@@ -707,11 +709,10 @@ int main(int argc, char **argv)
 	AsfModuleTracker tracker(engine, args.rootFolder.string());
 	std::vector<std::string> dependencies;
 	AsfModule *mainModule = tracker.getModule(args.modulePath, &dependencies, verbose);
-	std::string disassembly = dumpModule(mainModule->getScriptModule(), dependencies);
 
-	if (args.outputFile.empty())
-		std::cout << disassembly;
-	else
+	if (args.outputFile.empty() && args.dumpFile.empty())
+		std::cout << dumpModule(mainModule->getScriptModule(), dependencies);
+	else if(!args.outputFile.empty())
 	{
 		namespace fs = boost::filesystem;
 		
@@ -719,7 +720,18 @@ int main(int argc, char **argv)
 		fs::create_directories(fs::absolute(file).parent_path());
 		
 		fs::ofstream stream(file);
-		stream << disassembly;
+		stream << serializeModule(mainModule->getScriptModule(), dependencies);
+		stream.close();
+	}
+	else if(!args.dumpFile.empty())
+	{
+		namespace fs = boost::filesystem;
+		
+		fs::path file(args.dumpFile);
+		fs::create_directories(fs::absolute(file).parent_path());
+		
+		fs::ofstream stream(file);
+		stream << dumpModule(mainModule->getScriptModule(), dependencies);
 		stream.close();
 	}
 
