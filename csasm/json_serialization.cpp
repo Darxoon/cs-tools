@@ -5,10 +5,12 @@
 #include <string>
 #include <vector>
 
-#include <boost/algorithm/string/replace.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include "angelscript.h"
 #include <../source/as_scriptengine.h>
+
+#include "text_serialization.h"
 
 using json = nlohmann::json;
 
@@ -422,7 +424,7 @@ json serializeModule(asIScriptModule* module, const std::vector<std::string>& de
 			current[valueName] = value;
 		}
 
-		output["enums"].push_back(current);
+		output["enums"][name] = current;
 	}
 
 	// Typedefs
@@ -434,7 +436,6 @@ json serializeModule(asIScriptModule* module, const std::vector<std::string>& de
 	}
 
 	// Object types
-	dump.append(fmtString("object_types: %u\n", module->GetObjectTypeCount()));
 	for (unsigned int i = 0; i < module->GetObjectTypeCount(); ++i)
 	{
 		asIObjectType* type = module->GetObjectTypeByIndex(i);
@@ -454,33 +455,34 @@ json serializeModule(asIScriptModule* module, const std::vector<std::string>& de
 	}
 
 	// Global variables
-	dump.append(fmtString("global_variables: %u\n", module->GetGlobalVarCount()));
 	for (unsigned int i = 0; i < module->GetGlobalVarCount(); ++i)
 	{
 		// #todo-csasm: Dump global variables
-		dump.append(fmtString("\t%s\n", module->GetGlobalVarDeclaration(i, true)));
+		output["globalVariables"].push_back(module->GetGlobalVarDeclaration(i, true));
 	}
 
 	// Imported functions
-	dump.append(fmtString("imported_functions: %u\n", module->GetImportedFunctionCount()));
 	for (unsigned int i = 0; i < module->GetImportedFunctionCount(); ++i)
 	{
 		// #todo-csasm: Dump imported functions
-		dump.append(fmtString("\t%s (from %s)\n",
-			module->GetImportedFunctionDeclaration(i),
-			module->GetImportedFunctionSourceModule(i)));
+		output["importedFunctions"].push_back({
+			{"declaration", module->GetImportedFunctionDeclaration(i)},
+			{"origin", module->GetImportedFunctionSourceModule(i)},
+		});
 	}
 
 	// Functions
-	dump.append(fmtString("functions: %u\n", module->GetFunctionCount()));
 	for (unsigned int i = 0; i < module->GetFunctionCount(); ++i)
 	{
 		asIScriptFunction* func = module->GetFunctionByIndex(i);
 		// #todo-csasm: Dump functions
-		dump.append(fmtString("\t%s\n",
-			func->GetDeclaration(true, true, true)));
-		dump.append(dumpBytecode(func));
+
+		
+		std::vector<std::string> lines;
+		boost::split(lines, dumpBytecode(func), boost::is_any_of("\n"));
+
+		output["functions"][func->GetDeclaration(true, true, true)] = lines;
 	}
 
-	return dump;
+	return output;
 }
