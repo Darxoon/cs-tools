@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
@@ -27,6 +27,9 @@
     </Filter>
     <Filter Include="add_on\weakref">
       <UniqueIdentifier>{1019b588-b0ce-4664-9bfb-9411a1902118}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="lib">
+      <UniqueIdentifier>{9f905082-4ec2-4311-8253-920acc928e12}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -63,6 +66,9 @@
     <ClCompile Include="json_serialization.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="yaml\Yaml.cpp">
+      <Filter>lib</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\add_on\scriptany\scriptany.h">
@@ -76,9 +82,6 @@
     </ClInclude>
     <ClInclude Include="..\add_on\weakref\weakref.h">
       <Filter>add_on\weakref</Filter>
-    </ClInclude>
-    <ClInclude Include="json.hpp">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="asf.h">
       <Filter>Header Files</Filter>
@@ -94,6 +97,12 @@
     </ClInclude>
     <ClInclude Include="json_serialization.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="yaml\Yaml.hpp">
+      <Filter>lib</Filter>
+    </ClInclude>
+    <ClInclude Include="json.hpp">
+      <Filter>lib</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
