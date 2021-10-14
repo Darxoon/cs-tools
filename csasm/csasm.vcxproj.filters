@@ -66,9 +66,6 @@
     <ClCompile Include="json_serialization.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="yaml\Yaml.cpp">
-      <Filter>lib</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\add_on\scriptany\scriptany.h">
@@ -97,9 +94,6 @@
     </ClInclude>
     <ClInclude Include="json_serialization.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="yaml\Yaml.hpp">
-      <Filter>lib</Filter>
     </ClInclude>
     <ClInclude Include="json.hpp">
       <Filter>lib</Filter>
