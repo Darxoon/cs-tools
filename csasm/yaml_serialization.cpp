@@ -1,8 +1,11 @@
-#include "json_serialization.h"
+#include "yaml_serialization.h"
 
 
 #include <iostream>
+#include <set>
+#include <sstream>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #include <boost/algorithm/string.hpp>
@@ -10,8 +13,6 @@
 #include "angelscript.h"
 #include <../source/as_scriptengine.h>
 
-
-using json = nlohmann::json;
 
 template<typename... A>
 static std::string fmtString(const std::string& format, A... args)
@@ -383,100 +384,152 @@ static std::string serializeBytecode(asIScriptFunction* func)
 	return dump;
 }
 
-json serializeModule(asIScriptModule* module, const std::vector<std::string>& dependencies)
+static std::string to_yaml_str(const std::string& input)
+{
+	// Check if the input string contains ' #', ': ' or a line break because then, it has to be wrapped into quotes
+	std::string::size_type commentStart = input.find(" #");
+	std::string::size_type colonStart = input.find(": ");
+	std::string::size_type lineBreak = input.find("\n");
+
+	if (commentStart != std::string::npos || colonStart != std::string::npos || lineBreak != std::string::npos)
+	{
+		std::string escaped(input);
+		boost::replace_all(escaped, "\\", "\\\\");
+		boost::replace_all(escaped, "\n", "\\n");
+		boost::replace_all(escaped, "\"", "\\\"");
+		return "\"" + escaped + "\"";
+	}
+	else
+	{
+		return std::string(input);
+	}
+}
+
+std::string serializeModuleYaml(asIScriptModule* module, const std::vector<std::string>& dependencies)
 {
 	// Dump all information in the module
-	json output;
+	
+	// This function originally used this library https://github.com/jimmiebergmann/mini-yaml.
+	// However, I couldn't figure out how it works, so I figured it would be easier
+	// to construct the yaml file myself.
+	std::stringstream output;
 
 	// Dependencies
+	output << "dependencies:\n";
+	
 	for (const auto& dependency : dependencies)
 	{
-		output["dependencies"].push_back(dependency);
+		output << "  - " << to_yaml_str(dependency) << std::endl;
 	}
-
+	
 	// Enums
+	output << "enums:\n";
+	
 	for (unsigned int i = 0; i < module->GetEnumCount(); ++i)
 	{
 		int typeId;
 		const char* nameSpace;
 		const char* enumName = module->GetEnumByIndex(i, &typeId, &nameSpace);
 
-		std::string prefix = "";
-		if (std::string(nameSpace) != "")
+		std::string prefix;
+		if (!std::string(nameSpace).empty())
 		{
 			prefix = nameSpace;
 			prefix += "::";
 		}
 		
-		json current;
-
 		asIObjectType* type = module->GetEngine()->GetObjectTypeById(typeId);
 		std::string name = type
 			? fmtString("%s%s : %s", prefix.c_str(), enumName, type->GetName())
 			: fmtString("%s%s", prefix.c_str(), enumName);
+		
+		output << "  " << to_yaml_str(name) << ":\n";
 	
 		// Values
 		for (int j = 0; j < module->GetEnumValueCount(typeId); ++j)
 		{
 			int value;
 			const char* valueName = module->GetEnumValueByIndex(typeId, j, &value);
-			current[valueName] = value;
-		}
 
-		output["enums"][name] = current;
+			output << "    " << to_yaml_str(valueName) << ": " << to_yaml_str(std::to_string(value)) << std::endl;
+		}
 	}
 
+
 	// Typedefs
+	output << "typedefs:\n";
+	
 	for (unsigned int i = 0; i < module->GetTypedefCount(); ++i)
 	{
 		int typeId;
 		const char* typedefName = module->GetTypedefByIndex(i, &typeId);
-		output["typedefs"][typeId] = typedefName;
+
+		output << "  " << typeId << ": " << to_yaml_str(typedefName) << std::endl;
 	}
 
 	// Object types
+	output << "object_types:\n";
+
+	std::unordered_set<std::string> objectTypes;
+	
 	for (unsigned int i = 0; i < module->GetObjectTypeCount(); ++i)
 	{
 		asIObjectType* type = module->GetObjectTypeByIndex(i);
+		
+		std::string name = type->GetName();
+		while (objectTypes.count(name) > 0)
+		{
+			name += "__$";
+		}
 
-		json entry;
-		entry["size"] = type->GetSize();
-		entry["flags"] = fmtString("%08x", type->GetFlags());
+		objectTypes.insert(name);
+		
+		output << "  " << to_yaml_str(name) << ":\n";
+		
+		output << "    size: " << type->GetSize() << std::endl;
+		output << "    flags: " << to_yaml_str(fmtString("%08x", type->GetFlags())) << std::endl;
+		output << "    properties:\n";
 		
 		// #todo-csasm: Advanced object type dumping
 		// properties
 		for (unsigned int j = 0; j < type->GetPropertyCount(); ++j)
 		{
-			entry["properties"].push_back(type->GetPropertyDeclaration(j));
+			output << "      - " << to_yaml_str(type->GetPropertyDeclaration(j)) << std::endl;
 		}
-
-		output["objectTypes"][type->GetName()] = entry;
 	}
 
 	// Global variables
+	output << "global_variables:\n";
+	
 	for (unsigned int i = 0; i < module->GetGlobalVarCount(); ++i)
 	{
 		// #todo-csasm: Dump global variables
-		output["globalVariables"].push_back(module->GetGlobalVarDeclaration(i, true));
+		output << "  - " << to_yaml_str(module->GetGlobalVarDeclaration(i, true)) << std::endl;
 	}
 
 	// Imported functions
+	output << "imported_functions:\n";
+	
 	for (unsigned int i = 0; i < module->GetImportedFunctionCount(); ++i)
 	{
 		// #todo-csasm: Dump imported functions
-		output["importedFunctions"].push_back({
-			{"declaration", module->GetImportedFunctionDeclaration(i)},
-			{"origin", module->GetImportedFunctionSourceModule(i)},
-		});
+		// output["importedFunctions"].push_back({
+		// 	{"declaration", module->GetImportedFunctionDeclaration(i)},
+		// 	{"origin", module->GetImportedFunctionSourceModule(i)},
+		// });
+
+		output << "  - function: " << to_yaml_str(module->GetImportedFunctionDeclaration(i)) << std::endl;
+		output << "    origin: " << to_yaml_str(module->GetImportedFunctionSourceModule(i)) << std::endl;
 	}
 
 	// Functions
+	output << "functions:\n";
+	
 	for (unsigned int i = 0; i < module->GetFunctionCount(); ++i)
 	{
 		asIScriptFunction* func = module->GetFunctionByIndex(i);
-		// #todo-csasm: Dump functions
 
-		json& fn = output["functions"][func->GetDeclaration(true, true, true)];
+		output << "  " << to_yaml_str(func->GetDeclaration(true, true, true)) << ":\n";
 		
 		std::vector<std::string> lines;
 		boost::split(lines, serializeBytecode(func), boost::is_any_of("\n"));
@@ -490,9 +543,9 @@ json serializeModule(asIScriptModule* module, const std::vector<std::string>& de
 				continue;
 
 			const int index = str.find(": ") + 2;
-			fn.push_back(str.substr(index, str.length() - index));
+			output << "    - " << to_yaml_str(str.substr(index, str.length() - index)) << std::endl;
 		}
 	}
 
-	return output;
+	return output.str();
 }

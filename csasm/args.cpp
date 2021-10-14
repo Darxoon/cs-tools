@@ -16,6 +16,7 @@ CommandlineArgs parseArgs(const int argc, char** argv)
 		("registry", program_options::value<std::string>(), "the config registry.json file")
 		("module", program_options::value<std::string>(), "the relative path to the AngelScript .bin file")
 		("output,o", program_options::value<std::string>(), "the json output file. Cannot be reassembled yet")
+		("yaml,y", program_options::value<std::string>(), "the yaml output file. Cannot be reassembled yet")
 		("dump,d", program_options::value<std::string>(), "the dump output file. This is the default console output. More readable than json output but can't be reassembled")
 		;
 
@@ -42,6 +43,7 @@ CommandlineArgs parseArgs(const int argc, char** argv)
 		map["registry"].as<std::string>(),
 		map["module"].as<std::string>(),
 		map.count("output") ? map["output"].as<std::string>() : "",
+		map.count("yaml") ? map["yaml"].as<std::string>() : "",
 		map.count("dump") ? map["dump"].as<std::string>() : "",
 		map.count("verbose") > 0,
 	};
