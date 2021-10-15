@@ -8,6 +8,18 @@
 
 typedef unsigned char uint8_t;
 
+class file_not_found : public std::exception
+{
+public:
+	std::string m_filepath;
+	std::string role;
+	std::string msg;
+
+	file_not_found(std::string filepath, std::string role);
+
+	const char* what() const override;
+};
+
 class BinaryCodeStream : public asIBinaryStream
 {
 public:

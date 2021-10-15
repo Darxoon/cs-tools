@@ -2,6 +2,17 @@
 
 #include <iostream>
 
+file_not_found::file_not_found(std::string filepath, std::string role) : m_filepath(filepath), role(role), msg((role.empty() ? "F" : role + " f") + "ile not found: '" + filepath + "'")
+{
+	
+}
+
+const char* file_not_found::what() const
+{
+	return msg.c_str();
+}
+
+
 AsfModuleTracker::AsfModuleTracker(asIScriptEngine *engine, const std::string &root)
 {
 	mEngine = engine;
@@ -28,7 +39,20 @@ AsfModule *AsfModuleTracker::getModule(const std::string &name, std::vector<std:
 	{
 		// Not found, load
 		boost::filesystem::path filePath = mRoot;
+		
+		char last_char = filePath.string()[filePath.string().length() - 1];
+		if (last_char != '/' && last_char != '\\')
+		{
+			filePath.concat("/");
+		}
+		
 		filePath.concat(name);
+
+		if (!exists(filePath))
+		{
+			throw file_not_found(filePath.string(), "");
+		}
+		
 		std::ifstream inputStream(filePath.string(), std::ios::binary);
 		std::vector<uint8_t> inputBuffer((std::istreambuf_iterator<char>(inputStream)), (std::istreambuf_iterator<char>()));
 		auto *newModule = new AsfModule(name, inputBuffer, this, direct_dependencies, verbose);

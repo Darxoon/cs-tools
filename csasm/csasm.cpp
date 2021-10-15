@@ -699,40 +699,60 @@ int main(int argc, char **argv)
 		return -1;
 	}
 
-	engine->SetMessageCallback(asFUNCTION(AngelScriptMessageCallback), 0, asCALL_CDECL);
+	try {
+		engine->SetMessageCallback(asFUNCTION(AngelScriptMessageCallback), 0, asCALL_CDECL);
 
-	// We must replicate the scripting environment that PMCS registers in order to parse its scripts
-	std::ifstream configStream(args.configFile.c_str());
-	nlohmann::json config = nlohmann::json::parse(configStream);
-	ConfigureEngine(engine, config);
-
-	AsfModuleTracker tracker(engine, args.rootFolder.string());
-	std::vector<std::string> dependencies;
-	AsfModule *mainModule = tracker.getModule(args.modulePath, &dependencies, verbose);
-
-	if (args.dumpFile.empty() && args.yamlOutputFile.empty())
-		std::cout << dumpModule(mainModule->getScriptModule(), dependencies);
-	if(!args.yamlOutputFile.empty())
-	{
-		namespace fs = boost::filesystem;
+		// We must replicate the scripting environment that PMCS registers in order to parse its scripts
+		if (!exists(args.configFile))
+		{
+			throw file_not_found(args.configFile.string(), "Registry");
+		}
 		
-		fs::path file(args.yamlOutputFile);
-		fs::create_directories(fs::absolute(file).parent_path());
+		std::ifstream configStream(args.configFile.c_str());
+		nlohmann::json config = nlohmann::json::parse(configStream);
+		ConfigureEngine(engine, config);
 
-		fs::ofstream stream(file);
-		stream << serializeModuleYaml(mainModule->getScriptModule(), dependencies);
-		stream.close();
+		AsfModuleTracker tracker(engine, args.rootFolder.string());
+		std::vector<std::string> dependencies;
+		AsfModule* mainModule = tracker.getModule(args.modulePath, &dependencies, verbose);
+
+		if (args.dumpFile.empty() && args.yamlOutputFile.empty())
+			std::cout << dumpModule(mainModule->getScriptModule(), dependencies);
+		if (!args.yamlOutputFile.empty())
+		{
+			namespace fs = boost::filesystem;
+
+			fs::path file(args.yamlOutputFile);
+			fs::create_directories(fs::absolute(file).parent_path());
+
+			fs::ofstream stream(file);
+			stream << serializeModuleYaml(mainModule->getScriptModule(), dependencies);
+			stream.close();
+		}
+		if (!args.dumpFile.empty())
+		{
+			namespace fs = boost::filesystem;
+
+			fs::path file(args.dumpFile);
+			fs::create_directories(fs::absolute(file).parent_path());
+
+			fs::ofstream stream(file);
+			stream << dumpModule(mainModule->getScriptModule(), dependencies);
+			stream.close();
+		}
+		
 	}
-	if(!args.dumpFile.empty())
+	catch (file_not_found& e)
 	{
 		namespace fs = boost::filesystem;
 		
-		fs::path file(args.dumpFile);
-		fs::create_directories(fs::absolute(file).parent_path());
-		
-		fs::ofstream stream(file);
-		stream << dumpModule(mainModule->getScriptModule(), dependencies);
-		stream.close();
+		std::cout << e.what() << std::endl;
+		if (fs::exists(fs::path(e.m_filepath + ".zst")))
+		{
+			std::cout << "Perhaps you forgot to decompress the scripts. To do that, see https://github.com/Darxoon/TOKElfTool";
+		}
+
+		return -1;
 	}
 
 	resetConsoleCodePage();
