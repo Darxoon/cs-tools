@@ -3,48 +3,75 @@
 #include <iostream>
 #include <boost/program_options.hpp>
 
+static void print_help(const boost::program_options::options_description& description)
+{
+	std::cout << "Usage: csasm <data-root> <registry> <module>\n\n" << description << std::endl;
+	std::cout << "Required options:\n  data-root             The romfs folder. The scripts have to be decrypted.\n"
+		"  registry              The config registry.json file.\n  module                The relative path to the AngelScript.bin file.";
+}
+
+//--data - root arg       the root folder of the rom
+//--registry arg        the config registry.json file
+//--module arg          the relative path to the AngelScript.bin file
+
 CommandlineArgs parseArgs(const int argc, char** argv)
 {
-	namespace program_options = boost::program_options;
+	using namespace boost::program_options;
+	using boost::program_options::value;
 
 	// Declare the supported options.
-	program_options::options_description desc("Allowed options");
-	desc.add_options()
+	options_description visible_options("Allowed options");
+	visible_options.add_options()
 		("help,h", "produce help message")
 		("verbose,v", "log dependencies and other debugging messages")
-		("data-root", program_options::value<std::string>(), "the root folder of the rom")
-		("registry", program_options::value<std::string>(), "the config registry.json file")
-		("module", program_options::value<std::string>(), "the relative path to the AngelScript .bin file")
-		("output,o", program_options::value<std::string>(), "the json output file. Cannot be reassembled yet")
-		("yaml,y", program_options::value<std::string>(), "the yaml output file. Cannot be reassembled yet")
-		("dump,d", program_options::value<std::string>(), "the dump output file. This is the default console output. More readable than json output but can't be reassembled")
+		("output,o", value<std::string>(), "the json output file. Cannot be reassembled yet")
+		("yaml,y", value<std::string>(), "the yaml output file. Cannot be reassembled yet")
+		("dump,d", value<std::string>(), "the dump output file. This is the default console output. Contains more information than yaml but can't be reassembled.")
 		;
 
-	// Positional arguments
-	program_options::positional_options_description p;
-	p.add("data-root", 1);
-	p.add("registry", 1);
-	p.add("module", 1);
+	options_description hidden_options;
+	hidden_options.add_options()
+		("data-root", value<std::string>())
+		("registry", value<std::string>())
+		("module", value<std::string>())
+		;
 
-	program_options::variables_map map;
-	program_options::store(program_options::command_line_parser(argc, argv).
-		options(desc).positional(p).run(), map);
-	notify(map);
+	options_description total_options;
+	total_options.add(visible_options).add(hidden_options);
+	
+	try {
 
-	// evaluate
-	if (map.count("help")) {
-		std::cout << "Usage: csasm <data-root> <registry> <module>\n\n" << desc;
+		// Positional arguments
+		positional_options_description p;
+		p.add("data-root", 1);
+		p.add("registry", 1);
+		p.add("module", 1);
+
+		variables_map map;
+		store(command_line_parser(argc, argv).options(total_options).positional(p).run(), map);
+		notify(map);
+
+		// evaluate
+		if (map.count("help")) {
+			print_help(visible_options);
+			return { false };
+		}
+
+		return {
+			true,
+			map["data-root"].as<std::string>(),
+			map["registry"].as<std::string>(),
+			map["module"].as<std::string>(),
+			map.count("output") ? map["output"].as<std::string>() : "",
+			map.count("yaml") ? map["yaml"].as<std::string>() : "",
+			map.count("dump") ? map["dump"].as<std::string>() : "",
+			map.count("verbose") > 0,
+		};
+		
+	} catch (error& e) {
+		std::cerr << "Error: " << e.what() << std::endl << std::endl;
+		print_help(visible_options);
+		system("pause");
 		return { false };
 	}
-
-	return {
-		true,
-		map["data-root"].as<std::string>(),
-		map["registry"].as<std::string>(),
-		map["module"].as<std::string>(),
-		map.count("output") ? map["output"].as<std::string>() : "",
-		map.count("yaml") ? map["yaml"].as<std::string>() : "",
-		map.count("dump") ? map["dump"].as<std::string>() : "",
-		map.count("verbose") > 0,
-	};
 }
