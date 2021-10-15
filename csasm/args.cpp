@@ -65,7 +65,6 @@ CommandlineArgs parseArgs(const int argc, char** argv)
 	} catch (error& e) {
 		std::cerr << "Error: " << e.what() << std::endl << std::endl;
 		print_help(visible_options);
-		system("pause");
 		return { false };
 	}
 }
