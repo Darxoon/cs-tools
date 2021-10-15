@@ -20,7 +20,6 @@
 #include <iostream>
 #include <string>
 
-#include "json_serialization.h"
 #include "yaml_serialization.h"
 
 template<typename... A>
@@ -711,19 +710,8 @@ int main(int argc, char **argv)
 	std::vector<std::string> dependencies;
 	AsfModule *mainModule = tracker.getModule(args.modulePath, &dependencies, verbose);
 
-	if (args.outputFile.empty() && args.dumpFile.empty() && args.yamlOutputFile.empty())
+	if (args.dumpFile.empty() && args.yamlOutputFile.empty())
 		std::cout << dumpModule(mainModule->getScriptModule(), dependencies);
-	if(!args.outputFile.empty())
-	{
-		namespace fs = boost::filesystem;
-		
-		fs::path file(args.outputFile);
-		fs::create_directories(fs::absolute(file).parent_path());
-		
-		fs::ofstream stream(file);
-		stream << serializeModule(mainModule->getScriptModule(), dependencies);
-		stream.close();
-	}
 	if(!args.yamlOutputFile.empty())
 	{
 		namespace fs = boost::filesystem;

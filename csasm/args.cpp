@@ -10,10 +10,6 @@ static void print_help(const boost::program_options::options_description& descri
 		"  registry              The config registry.json file.\n  module                The relative path to the AngelScript.bin file.";
 }
 
-//--data - root arg       the root folder of the rom
-//--registry arg        the config registry.json file
-//--module arg          the relative path to the AngelScript.bin file
-
 CommandlineArgs parseArgs(const int argc, char** argv)
 {
 	using namespace boost::program_options;
@@ -24,7 +20,6 @@ CommandlineArgs parseArgs(const int argc, char** argv)
 	visible_options.add_options()
 		("help,h", "produce help message")
 		("verbose,v", "log dependencies and other debugging messages")
-		("output,o", value<std::string>(), "the json output file. Cannot be reassembled yet")
 		("yaml,y", value<std::string>(), "the yaml output file. Cannot be reassembled yet")
 		("dump,d", value<std::string>(), "the dump output file. This is the default console output. Contains more information than yaml but can't be reassembled.")
 		;
@@ -62,7 +57,6 @@ CommandlineArgs parseArgs(const int argc, char** argv)
 			map["data-root"].as<std::string>(),
 			map["registry"].as<std::string>(),
 			map["module"].as<std::string>(),
-			map.count("output") ? map["output"].as<std::string>() : "",
 			map.count("yaml") ? map["yaml"].as<std::string>() : "",
 			map.count("dump") ? map["dump"].as<std::string>() : "",
 			map.count("verbose") > 0,
