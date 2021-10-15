@@ -716,13 +716,13 @@ int main(int argc, char **argv)
 		std::vector<std::string> dependencies;
 		AsfModule* mainModule = tracker.getModule(args.modulePath, &dependencies, verbose);
 
-		if (args.dumpFile.empty() && args.yamlOutputFile.empty())
+		if (args.dumpFile.empty() && args.outputFile.empty())
 			std::cout << dumpModule(mainModule->getScriptModule(), dependencies);
-		if (!args.yamlOutputFile.empty())
+		if (!args.outputFile.empty())
 		{
 			namespace fs = boost::filesystem;
 
-			fs::path file(args.yamlOutputFile);
+			fs::path file(args.outputFile);
 			fs::create_directories(fs::absolute(file).parent_path());
 
 			fs::ofstream stream(file);

@@ -11,7 +11,7 @@ struct CommandlineArgs
 	boost::filesystem::path configFile;
 	std::string modulePath;
 
-	std::string yamlOutputFile;
+	std::string outputFile;
 	std::string dumpFile;
 	
 	bool verbose;
