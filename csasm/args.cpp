@@ -5,9 +5,10 @@
 
 static void print_help(const boost::program_options::options_description& description)
 {
-	std::cout << "Usage: csasm <data-root> <registry> <module>\n\n" << description << std::endl;
+	std::cout << "Usage: csasm <data-root> <registry> <module>\n\n";
 	std::cout << "Required options:\n  data-root             The romfs folder. The scripts have to be decrypted.\n"
-		"  registry              The config registry.json file.\n  module                The relative path to the AngelScript.bin file.";
+		"  registry              The config registry.json file.\n  module                The relative path to the AngelScript.bin file.\n\n";
+	std::cout << description << std::endl;
 }
 
 CommandlineArgs parseArgs(const int argc, char** argv)
@@ -21,7 +22,7 @@ CommandlineArgs parseArgs(const int argc, char** argv)
 		("help,h", "produce help message")
 		("verbose,v", "log dependencies and other debugging messages")
 		("output,o", value<std::string>(), "the yaml output file. Less detailed than the dump but can be reassembled.")
-		("dump,d", value<std::string>(), "the dump output file. This is the default console output. Contains more information than yaml but can't be reassembled.")
+		("dump,d", value<std::string>(), "the dump output file. This is the default console output. Contains slightly more information than yaml but can't be reassembled.")
 		("bin,b", value<std::string>(), "the binary AngelScript output file.")
 		;
 
@@ -48,7 +49,7 @@ CommandlineArgs parseArgs(const int argc, char** argv)
 		notify(map);
 
 		// evaluate
-		if (map.count("help")) {
+		if (map.count("help") || argc == 1) {
 			print_help(visible_options);
 			return { false };
 		}
