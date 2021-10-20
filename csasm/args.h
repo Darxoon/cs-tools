@@ -8,7 +8,6 @@ struct CommandlineArgs
 	bool valid;
 	
 	boost::filesystem::path rootFolder;
-	boost::filesystem::path configFile;
 	std::string modulePath;
 
 	std::string binaryOutputFile;

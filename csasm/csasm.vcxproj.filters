@@ -99,4 +99,7 @@
       <Filter>lib</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="tok_as_registry.json" />
+  </ItemGroup>
 </Project>

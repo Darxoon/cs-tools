@@ -14,6 +14,8 @@
 #include <scriptany/scriptany.h>
 #include <weakref/weakref.h>
 
+#include <boost/dll/runtime_symbol_info.hpp>
+
 #include "json.hpp"
 
 #include <fstream>
@@ -720,12 +722,14 @@ int main(int argc, char **argv)
 		engine->SetMessageCallback(asFUNCTION(AngelScriptMessageCallback), 0, asCALL_CDECL);
 
 		// We must replicate the scripting environment that PMCS registers in order to parse its scripts
-		if (!exists(args.configFile))
+		fs::path configLocation = boost::dll::program_location().parent_path() / "tok_as_registry.json";
+		
+		if (!fs::exists(configLocation))
 		{
-			throw file_not_found(args.configFile.string(), "Registry");
+			throw file_not_found(configLocation.string(), "Registry");
 		}
 		
-		std::ifstream configStream(args.configFile.c_str());
+		std::ifstream configStream(configLocation.c_str());
 		nlohmann::json config = nlohmann::json::parse(configStream);
 		ConfigureEngine(engine, config);
 

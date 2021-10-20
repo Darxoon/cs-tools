@@ -5,9 +5,9 @@
 
 static void print_help(const boost::program_options::options_description& description)
 {
-	std::cout << "Usage: csasm <data-root> <registry> <module>\n\n";
+	std::cout << "Usage: csasm <data-root> <module>\n\n";
 	std::cout << "Required options:\n  data-root             The romfs folder. The scripts have to be decrypted.\n"
-		"  registry              The config registry.json file.\n  module                The relative path to the AngelScript.bin file.\n\n";
+		"  module                The relative path to the AngelScript.bin file.\n\n";
 	std::cout << description << std::endl;
 }
 
@@ -29,7 +29,6 @@ CommandlineArgs parseArgs(const int argc, char** argv)
 	options_description hidden_options;
 	hidden_options.add_options()
 		("data-root", value<std::string>())
-		("registry", value<std::string>())
 		("module", value<std::string>())
 		;
 
@@ -41,7 +40,6 @@ CommandlineArgs parseArgs(const int argc, char** argv)
 		// Positional arguments
 		positional_options_description p;
 		p.add("data-root", 1);
-		p.add("registry", 1);
 		p.add("module", 1);
 
 		variables_map map;
@@ -57,7 +55,6 @@ CommandlineArgs parseArgs(const int argc, char** argv)
 		return {
 			true,
 			map["data-root"].as<std::string>(),
-			map["registry"].as<std::string>(),
 			map["module"].as<std::string>(),
 			map.count("bin") ? map["bin"].as<std::string>() : "",
 			map.count("output") ? map["output"].as<std::string>() : "",
