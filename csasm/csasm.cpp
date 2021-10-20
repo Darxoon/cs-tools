@@ -679,6 +679,23 @@ void ConfigureEngine(asIScriptEngine *engine, const nlohmann::json &config)
 	RegisterScriptPreregGlobalProperties(engine, config);
 }
 
+namespace fs = boost::filesystem;
+
+static fs::path get_module_path(fs::path root, std::string module_path)
+{
+	fs::path p(root);
+	
+	if (root.string()[root.size() - 1] != '/' && root.string()[root.size() - 1] != '\\')
+		p.append("/");
+
+	p.append(module_path);
+
+	if (fs::exists(p))
+		return module_path;
+	else
+		return fs::relative(fs::absolute(module_path), fs::absolute(root));
+}
+
 int main(int argc, char **argv)
 {
 	// ConIO for UTF8 characters
@@ -714,14 +731,13 @@ int main(int argc, char **argv)
 
 		AsfModuleTracker tracker(engine, args.rootFolder.string());
 		std::vector<std::string> dependencies;
-		AsfModule* mainModule = tracker.getModule(args.modulePath, &dependencies, verbose);
+		fs::path modulePath = get_module_path(args.rootFolder, args.modulePath);
+		AsfModule* mainModule = tracker.getModule(modulePath.string(), &dependencies, verbose);
 
 		if (args.dumpFile.empty() && args.outputFile.empty() && args.binaryOutputFile.empty())
 			std::cout << dumpModule(mainModule->getScriptModule(), dependencies);
 		if (!args.outputFile.empty())
 		{
-			namespace fs = boost::filesystem;
-
 			fs::path file(args.outputFile);
 			fs::create_directories(fs::absolute(file).parent_path());
 
@@ -731,8 +747,6 @@ int main(int argc, char **argv)
 		}
 		if (!args.dumpFile.empty())
 		{
-			namespace fs = boost::filesystem;
-
 			fs::path file(args.dumpFile);
 			fs::create_directories(fs::absolute(file).parent_path());
 
@@ -743,8 +757,6 @@ int main(int argc, char **argv)
 
 		if (!args.binaryOutputFile.empty())
 		{
-			namespace fs = boost::filesystem;
-
 			std::vector<uint8_t> data = mainModule->save();
 			
 			fs::path file(args.binaryOutputFile);
