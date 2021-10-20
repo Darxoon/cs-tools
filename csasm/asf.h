@@ -38,7 +38,12 @@ public:
 	virtual void Write(const void *ptr, asUINT size)
 	{
 		const uint8_t *data = static_cast<const uint8_t *>(ptr);
-		mData.insert(mData.begin(), data, data + size);
+		mData.insert(mData.end(), data, data + size);
+	}
+
+	std::vector<uint8_t> getData() const
+	{
+		return mData;
 	}
 
 private:
@@ -57,6 +62,8 @@ public:
 	{
 		return mModule;
 	}
+
+	std::vector<uint8_t> save() const;
 
 private:
 	AsfModuleTracker *mTracker;

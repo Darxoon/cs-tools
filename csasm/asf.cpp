@@ -122,3 +122,53 @@ AsfModule::AsfModule(const std::string &name, const std::vector<uint8_t> &buffer
 	bool debugInfo = false;
 	mModule->LoadByteCode(&code, &debugInfo);
 }
+
+std::vector<uint8_t> AsfModule::save() const
+{
+	// Get bytecode
+	BinaryCodeStream codeStream{ std::vector<uint8_t>() };
+	std::cout << mModule->SaveByteCode(&codeStream) << std::endl;
+
+	std::vector<uint8_t> bytecode = codeStream.getData();
+	
+	// Construct Asf File
+	int codeOffset = 0x2010; // Code offset always starts at 0x2010
+	int codeSize = bytecode.size();
+	int dependencyCount = mDependencies.size();
+	
+	std::vector<uint8_t> out;
+	out.reserve(codeOffset + codeSize);
+	
+	// Write ASF header
+	out.insert(out.end(), cAsfMagic, cAsfMagic + 4);
+
+	out.insert(out.end(), reinterpret_cast<uint8_t*>(&codeOffset), reinterpret_cast<uint8_t*>(&codeOffset + 1));
+	
+	out.insert(out.end(), reinterpret_cast<uint8_t*>(&codeSize), reinterpret_cast<uint8_t*>(&codeSize + 1));
+
+	out.insert(out.end(), reinterpret_cast<uint8_t*>(&dependencyCount), reinterpret_cast<uint8_t*>(&dependencyCount + 1));
+
+	// Write dependencies
+	for (const std::string& dependency : mDependencies)
+	{
+		out.insert(out.end(), dependency.begin(), dependency.end());
+		
+		for (int i = 0; i < 128 - dependency.size(); ++i)
+		{
+			out.push_back(0);
+		}
+	}
+
+	// To replicate original ASF files, pad with zeros until the length is 0x2010
+	// I have no idea why this is, but in every ASF file the code offset starts at offset 0x2010
+	if (out.size() > codeOffset)
+		throw std::exception("Dependency list too large");
+
+	while (out.size() < codeOffset)
+		out.push_back(0);
+
+
+	out.insert(out.end(), bytecode.begin(), bytecode.end());
+
+	return out;
+}

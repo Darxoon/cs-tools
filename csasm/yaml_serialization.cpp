@@ -423,7 +423,8 @@ std::string serializeModuleYaml(asIScriptModule* module, const std::vector<std::
 	}
 	
 	// Enums
-	output << "enums:\n";
+	if (module->GetEnumCount() > 0)
+		output << "enums:\n";
 	
 	for (unsigned int i = 0; i < module->GetEnumCount(); ++i)
 	{
@@ -457,7 +458,8 @@ std::string serializeModuleYaml(asIScriptModule* module, const std::vector<std::
 
 
 	// Typedefs
-	output << "typedefs:\n";
+	if (module->GetTypedefCount() > 0)
+		output << "typedefs:\n";
 	
 	for (unsigned int i = 0; i < module->GetTypedefCount(); ++i)
 	{
@@ -468,7 +470,8 @@ std::string serializeModuleYaml(asIScriptModule* module, const std::vector<std::
 	}
 
 	// Object types
-	output << "object_types:\n";
+	if (module->GetObjectTypeCount() > 0)
+		output << "object_types:\n";
 
 	std::unordered_set<std::string> objectTypes;
 	
@@ -499,7 +502,8 @@ std::string serializeModuleYaml(asIScriptModule* module, const std::vector<std::
 	}
 
 	// Global variables
-	output << "global_variables:\n";
+	if (module->GetGlobalVarCount() > 0)
+		output << "global_variables:\n";
 	
 	for (unsigned int i = 0; i < module->GetGlobalVarCount(); ++i)
 	{
@@ -508,7 +512,8 @@ std::string serializeModuleYaml(asIScriptModule* module, const std::vector<std::
 	}
 
 	// Imported functions
-	output << "imported_functions:\n";
+	if (module->GetImportedFunctionCount() > 0)
+		output << "imported_functions:\n";
 	
 	for (unsigned int i = 0; i < module->GetImportedFunctionCount(); ++i)
 	{
@@ -523,7 +528,8 @@ std::string serializeModuleYaml(asIScriptModule* module, const std::vector<std::
 	}
 
 	// Functions
-	output << "functions:\n";
+	if (module->GetFunctionCount() > 0)
+		output << "functions:\n";
 	
 	for (unsigned int i = 0; i < module->GetFunctionCount(); ++i)
 	{

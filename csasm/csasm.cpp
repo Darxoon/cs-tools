@@ -716,7 +716,7 @@ int main(int argc, char **argv)
 		std::vector<std::string> dependencies;
 		AsfModule* mainModule = tracker.getModule(args.modulePath, &dependencies, verbose);
 
-		if (args.dumpFile.empty() && args.outputFile.empty())
+		if (args.dumpFile.empty() && args.outputFile.empty() && args.binaryOutputFile.empty())
 			std::cout << dumpModule(mainModule->getScriptModule(), dependencies);
 		if (!args.outputFile.empty())
 		{
@@ -740,7 +740,20 @@ int main(int argc, char **argv)
 			stream << dumpModule(mainModule->getScriptModule(), dependencies);
 			stream.close();
 		}
-		
+
+		if (!args.binaryOutputFile.empty())
+		{
+			namespace fs = boost::filesystem;
+
+			std::vector<uint8_t> data = mainModule->save();
+			
+			fs::path file(args.binaryOutputFile);
+			fs::create_directories(fs::absolute(file).parent_path());
+
+			fs::ofstream stream(file, std::ios::binary);
+			stream.write(reinterpret_cast<const char*>(data.data()), data.size());
+			stream.close();
+		}
 	}
 	catch (file_not_found& e)
 	{
@@ -749,7 +762,7 @@ int main(int argc, char **argv)
 		std::cout << e.what() << std::endl;
 		if (fs::exists(fs::path(e.m_filepath + ".zst")))
 		{
-			std::cout << "Perhaps you forgot to decompress the scripts. To do that, see https://github.com/Darxoon/TOKElfTool";
+			std::cout << "Perhaps you forgot to decompress the scripts. To do that, use \"Decrypt all\" from https://github.com/Darxoon/TOKElfTool";
 		}
 
 		return -1;
