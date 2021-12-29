@@ -58,7 +58,7 @@ static std::string serializeBytecode(asIScriptFunction* func)
 				std::string formatted = str.AddressOf();
 				boost::replace_all(formatted, "\\", "\\\\");
 				boost::replace_all(formatted, "\n", "\\n");
-				disas = fmtString("%-8s %d (%d:\"%s\")", mnem, arg0, str.GetLength(), formatted.c_str());
+				disas = fmtString("%-8s %d (length %d:\"%s\")", mnem, arg0, str.GetLength(), formatted.c_str());
 			}
 			break;
 			default:
@@ -415,7 +415,8 @@ std::string serializeModuleYaml(asIScriptModule* module, const std::vector<std::
 	std::stringstream output;
 
 	// Dependencies
-	output << "dependencies:\n";
+	if (!dependencies.empty())
+		output << "dependencies:\n";
 	
 	for (const auto& dependency : dependencies)
 	{
